@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyDesk — Everything Pinned in One Place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cork-1:#c99a66;
+    --cork-2:#b8875a;
+    --wood-dark:#3d2b1f;
+    --wood-mid:#5a4130;
+    --card-cream:#fbf5e9;
+    --card-cream-2:#f5ecd9;
+    --ink:#2a2119;
+    --ink-soft:#5c5044;
+    --paper-line:#e2d5bc;
+
+    --math:#3d5afe;
+    --math-soft:#e8ebff;
+    --science:#2f9e44;
+    --science-soft:#e6f6e9;
+    --writing:#e0791e;
+    --writing-soft:#fdece0;
+    --study:#8452e5;
+    --study-soft:#efe7fd;
+    --finance:#0e9384;
+    --finance-soft:#e0f5f2;
+    --convert:#d6336c;
+    --convert-soft:#fce4ec;
+    --misc:#a1732c;
+    --misc-soft:#f5ead6;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,0,0,0.06) 0, transparent 3px),
+      radial-gradient(circle at 65% 55%, rgba(0,0,0,0.05) 0, transparent 3px),
+      radial-gradient(circle at 40% 80%, rgba(0,0,0,0.06) 0, transparent 3px),
+      radial-gradient(circle at 85% 15%, rgba(0,0,0,0.05) 0, transparent 3px),
+      radial-gradient(circle at 25% 65%, rgba(0,0,0,0.05) 0, transparent 3px),
+      radial-gradient(circle at 90% 80%, rgba(0,0,0,0.06) 0, transparent 3px),
+      linear-gradient(160deg, var(--cork-1), var(--cork-2));
+    background-size: 40px 40px, 55px 55px, 35px 35px, 60px 60px, 45px 45px, 50px 50px, cover;
+    min-height:100vh;
+  }
+
+  /* wood frame edge */
+  .frame-top, .frame-bottom{
+    height:16px;
+    background: repeating-linear-gradient(90deg, var(--wood-dark) 0 3px, var(--wood-mid) 3px 6px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35) inset;
+  }
+
+  header.hero{
+    padding:64px 24px 40px;
+    text-align:center;
+    max-width:920px;
+    margin:0 auto;
+  }
+  .logo-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--wood-dark);
+    background:rgba(251,245,233,0.85);
+    padding:6px 14px;
+    border-radius:3px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+    transform:rotate(-1.2deg);
+    margin-bottom:28px;
+  }
+  .logo-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--convert);}
+
+  .pinned-note{
+    position:relative;
+    display:inline-block;
+    background:var(--card-cream);
+    padding:38px 44px 34px;
+    border-radius:2px;
+    box-shadow:0 14px 30px rgba(30,20,10,0.35), 0 2px 0 rgba(255,255,255,0.4) inset;
+    transform:rotate(-0.6deg);
+    max-width:100%;
+  }
+  .pinned-note::before{
+    content:"";
+    position:absolute;
+    top:-11px;left:50%;
+    transform:translateX(-50%);
+    width:18px;height:18px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ff8a80, #b71c1c 75%);
+    box-shadow:0 3px 5px rgba(0,0,0,0.45);
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:clamp(34px,5vw,58px);
+    line-height:1.05;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--writing);
+  }
+  .hero-sub{
+    font-size:16.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    max-width:560px;
+    margin:0 auto;
+  }
+  .hero-meta{
+    margin-top:22px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    letter-spacing:.03em;
+  }
+
+  /* Binder tabs nav */
+  nav.tabs{
+    max-width:1080px;
+    margin:8px auto 0;
+    padding:0 24px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+  }
+  .tab-btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 18px 12px;
+    border:none;
+    cursor:pointer;
+    background:var(--card-cream-2);
+    color:var(--ink-soft);
+    border-radius:8px 8px 3px 3px;
+    box-shadow:0 3px 6px rgba(0,0,0,0.18);
+    transition:transform .15s ease, box-shadow .15s ease, color .15s ease;
+    position:relative;
+    top:0;
+  }
+  .tab-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 10px rgba(0,0,0,0.22); }
+  .tab-btn.active{
+    background:var(--card-cream);
+    color:var(--ink);
+    top:-4px;
+    box-shadow:0 8px 14px rgba(0,0,0,0.28);
+  }
+  .tab-btn .swatch{
+    display:inline-block;
+    width:8px;height:8px;
+    border-radius:50%;
+    margin-right:7px;
+    vertical-align:middle;
+  }
+
+  /* board grid */
+  .board{
+    max-width:1080px;
+    margin:44px auto 80px;
+    padding:0 28px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:34px 28px;
+  }
+
+  .card{
+    position:relative;
+    background:var(--card-cream);
+    border-radius:3px;
+    padding:22px 20px 20px;
+    box-shadow:0 10px 20px rgba(20,12,4,0.28), 0 1px 0 rgba(255,255,255,0.5) inset;
+    cursor:pointer;
+    transition:transform .2s ease, box-shadow .2s ease;
+    background-image: repeating-linear-gradient(var(--paper-line) 0 1px, transparent 1px 27px);
+    background-position: 0 54px;
+  }
+  .card:nth-child(6n+1){ transform:rotate(-2deg); }
+  .card:nth-child(6n+2){ transform:rotate(1.4deg); }
+  .card:nth-child(6n+3){ transform:rotate(-1deg); }
+  .card:nth-child(6n+4){ transform:rotate(2deg); }
+  .card:nth-child(6n+5){ transform:rotate(-1.6deg); }
+  .card:nth-child(6n+6){ transform:rotate(1deg); }
+  .card:hover{ transform:rotate(0deg) translateY(-6px) scale(1.02); box-shadow:0 18px 30px rgba(20,12,4,0.35); z-index:2; }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:-9px; left:50%;
+    transform:translateX(-50%);
+    width:14px;height:14px;
+    border-radius:50%;
+    box-shadow:0 3px 5px rgba(0,0,0,0.4);
+  }
+  .card[data-cat="math"]::before{ background:radial-gradient(circle at 35% 30%,#8ea3ff,var(--math) 75%); }
+  .card[data-cat="science"]::before{ background:radial-gradient(circle at 35% 30%,#8fe0a3,var(--science) 75%); }
+  .card[data-cat="writing"]::before{ background:radial-gradient(circle at 35% 30%,#ffbf87,var(--writing) 75%); }
+  .card[data-cat="study"]::before{ background:radial-gradient(circle at 35% 30%,#c9aefb,var(--study) 75%); }
+  .card[data-cat="finance"]::before{ background:radial-gradient(circle at 35% 30%,#7fe0d3,var(--finance) 75%); }
+  .card[data-cat="convert"]::before{ background:radial-gradient(circle at 35% 30%,#ff9dbd,var(--convert) 75%); }
+  .card[data-cat="misc"]::before{ background:radial-gradient(circle at 35% 30%,#e0c48c,var(--misc) 75%); }
+
+  .card .icon{ font-size:26px; margin-bottom:10px; display:block;}
+  .card h3{
+    font-family:'Fraunces',serif;
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 6px;
+  }
+  .card p{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.55;
+    margin:0 0 14px;
+  }
+  .card .tag{
+    display:inline-block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:4px 9px;
+    border-radius:20px;
+    font-weight:600;
+  }
+  .card[data-cat="math"] .tag{ background:var(--math-soft); color:var(--math); }
+  .card[data-cat="science"] .tag{ background:var(--science-soft); color:var(--science); }
+  .card[data-cat="writing"] .tag{ background:var(--writing-soft); color:var(--writing); }
+  .card[data-cat="study"] .tag{ background:var(--study-soft); color:var(--study); }
+  .card[data-cat="finance"] .tag{ background:var(--finance-soft); color:var(--finance); }
+  .card[data-cat="convert"] .tag{ background:var(--convert-soft); color:var(--convert); }
+  .card[data-cat="misc"] .tag{ background:var(--misc-soft); color:var(--misc); }
+
+  /* modal */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(20,12,4,0.55);
+    backdrop-filter:blur(2px);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:5vh 20px;
+    overflow-y:auto;
+    z-index:50;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--card-cream);
+    max-width:640px;
+    width:100%;
+    border-radius:6px;
+    padding:34px 30px 30px;
+    position:relative;
+    box-shadow:0 30px 60px rgba(0,0,0,0.5);
+    animation:pop .22s ease;
+  }
+  @keyframes pop{ from{ transform:scale(.94) translateY(10px); opacity:0;} to{ transform:scale(1) translateY(0); opacity:1;} }
+  .modal::before{
+    content:"";
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    width:16px;height:16px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ff8a80, #b71c1c 75%);
+    box-shadow:0 3px 5px rgba(0,0,0,0.4);
+  }
+  .modal .close{
+    position:absolute; top:16px; right:18px;
+    background:none; border:none; font-size:20px; cursor:pointer;
+    color:var(--ink-soft); line-height:1;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .modal .close:hover{ color:var(--ink); }
+  .modal h2{
+    font-family:'Fraunces',serif;
+    font-size:26px;
+    margin:0 0 4px;
+  }
+  .modal .modal-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:18px;
+    display:inline-block;
+    font-weight:600;
+  }
+
+  /* form elements shared */
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+  .field input[type=text], .field input[type=number], .field input[type=date], .field select, .field textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    border:1.5px solid #ddceac;
+    border-radius:6px;
+    background:#fffdf8;
+    color:var(--ink);
+  }
+  .field textarea{ resize:vertical; min-height:70px; font-family:'Inter',sans-serif; }
+  .row{ display:flex; gap:10px; }
+  .row > *{ flex:1; }
+
+  button.btn{
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    padding:10px 18px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    color:#fff;
+    transition:opacity .15s;
+  }
+  button.btn:hover{ opacity:.88; }
+  button.btn.ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1.5px solid #ddceac;
+  }
+
+  table.mini{ width:100%; border-collapse:collapse; font-size:13.5px; margin-top:12px; }
+  table.mini th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); padding:6px 4px; border-bottom:1.5px solid #e2d5bc; }
+  table.mini td{ padding:8px 4px; border-bottom:1px solid #efe6d3; }
+  table.mini .del{ cursor:pointer; color:var(--convert); font-weight:700; }
+
+  .result-box{
+    margin-top:18px;
+    padding:16px;
+    border-radius:8px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .result-big{ font-size:34px; font-weight:700; }
+  .result-label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; opacity:.8; }
+
+  /* timer */
+  .timer-display{
+    font-family:'JetBrains Mono',monospace;
+    font-size:64px;
+    font-weight:600;
+    text-align:center;
+    margin:14px 0 6px;
+    letter-spacing:.02em;
+  }
+  .timer-mode{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-soft); margin-bottom:16px;}
+  .timer-controls{ display:flex; justify-content:center; gap:10px; margin-bottom:10px; }
+
+  /* flashcard */
+  .flip-area{ perspective:1200px; margin:16px 0; }
+  .flashcard{
+    height:180px;
+    border-radius:10px;
+    position:relative;
+    cursor:pointer;
+    transform-style:preserve-3d;
+    transition:transform .5s;
+  }
+  .flashcard.flipped{ transform:rotateY(180deg); }
+  .flashcard .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:20px;
+    font-family:'Fraunces',serif; font-size:19px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.12);
+  }
+  .flashcard .front{ background:var(--study-soft); color:var(--study); }
+  .flashcard .back{ background:var(--study); color:#fff; transform:rotateY(180deg); }
+  .deck-nav{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft); }
+
+  .empty-state{ font-size:13px; color:var(--ink-soft); font-style:italic; padding:14px 0; text-align:center; }
+
+  footer{
+    text-align:center;
+    padding:20px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    color:rgba(61,43,31,0.7);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+  @media (max-width:600px){
+    .timer-display{ font-size:46px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame-top"></div>
+
+<header class="hero">
+  <span class="logo-tag"><span class="dot"></span> StudyDesk · a place for everything</span>
+  <div class="pinned-note">
+    <h1>Your whole course load,<br><em>pinned</em> in one place.</h1>
+    <p class="hero-sub">Eight small tools for the everyday grind — grades, timers, budgets, cards, and deadlines — no sign-up, no clutter. Pick a card off the board.</p>
+  </div>
+  <div class="hero-meta">8 TOOLS · 7 SUBJECTS · 0 ACCOUNTS NEEDED</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab-btn active" data-filter="all">All tools</button>
+  <button class="tab-btn" data-filter="math"><span class="swatch" style="background:var(--math)"></span>Math</button>
+  <button class="tab-btn" data-filter="study"><span class="swatch" style="background:var(--study)"></span>Study</button>
+  <button class="tab-btn" data-filter="writing"><span class="swatch" style="background:var(--writing)"></span>Writing</button>
+  <button class="tab-btn" data-filter="finance"><span class="swatch" style="background:var(--finance)"></span>Finance</button>
+  <button class="tab-btn" data-filter="convert"><span class="swatch" style="background:var(--convert)"></span>Convert</button>
+  <button class="tab-btn" data-filter="misc"><span class="swatch" style="background:var(--misc)"></span>Misc</button>
+</nav>
+
+<main class="board" id="board">
+
+  <div class="card" data-cat="math" data-tool="gpa">
+    <span class="icon">🎓</span>
+    <h3>GPA Calculator</h3>
+    <p>Add your courses and credit hours to get a running grade point average.</p>
+    <span class="tag">Math</span>
+  </div>
+
+  <div class="card" data-cat="study" data-tool="pomodoro">
+    <span class="icon">⏱️</span>
+    <h3>Pomodoro Timer</h3>
+    <p>25 minutes of focus, 5 minutes of air. Tracks your finished sessions.</p>
+    <span class="tag">Study</span>
+  </div>
+
+  <div class="card" data-cat="study" data-tool="flashcards">
+    <span class="icon">🗂️</span>
+    <h3>Flashcards</h3>
+    <p>Build a quick deck, flip through it, and drill yourself before class.</p>
+    <span class="tag">Study</span>
+  </div>
+
+  <div class="card" data-cat="convert" data-tool="converter">
+    <span class="icon">📐</span>
+    <h3>Unit Converter</h3>
+    <p>Length, weight and temperature conversions for lab reports and problem sets.</p>
+    <span class="tag">Convert</span>
+  </div>
+
+  <div class="card" data-cat="writing" data-tool="wordcount">
+    <span class="icon">✍️</span>
+    <h3>Word Counter</h3>
+    <p>Paste an essay draft to see word count, character count and reading time.</p>
+    <span class="tag">Writing</span>
+  </div>
+
+  <div class="card" data-cat="finance" data-tool="budget">
+    <span class="icon">💸</span>
+    <h3>Budget Tracker</h3>
+    <p>Log income and spending to see what's actually left before rent's due.</p>
+    <span class="tag">Finance</span>
+  </div>
+
+  <div class="card" data-cat="misc" data-tool="tasks">
+    <span class="icon">📌</span>
+    <h3>Task Manager</h3>
+    <p>Keep a running list of assignments with due dates, sorted for you.</p>
+    <span class="tag">Misc</span>
+  </div>
+
+  <div class="card" data-cat="study" data-tool="countdown">
+    <span class="icon">📅</span>
+    <h3>Exam Countdown</h3>
+    <p>Add an exam or deadline and watch the days tick down in real time.</p>
+    <span class="tag">Study</span>
+  </div>
+
+</main>
+
+<footer>MADE FOR LATE NIGHTS IN THE LIBRARY · STUDYDESK</footer>
+
+<div class="frame-bottom"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* ---------------- board / modal plumbing ---------------- */
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
+const board = document.getElementById('board');
+const tabs = document.getElementById('tabs');
+
+const CAT_COLORS = {
+  math:'var(--math)', science:'var(--science)', writing:'var(--writing)',
+  study:'var(--study)', finance:'var(--finance)', convert:'var(--convert)', misc:'var(--misc)'
+};
+const CAT_SOFT = {
+  math:'var(--math-soft)', science:'var(--science-soft)', writing:'var(--writing-soft)',
+  study:'var(--study-soft)', finance:'var(--finance-soft)', convert:'var(--convert-soft)', misc:'var(--misc-soft)'
+};
+
+function openModal(html, cat){
+  modal.innerHTML = `<button class="close" aria-label="Close">✕ esc</button>` + html;
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  modal.querySelector('.close').onclick = closeModal;
+}
+function closeModal(){
+  overlay.classList.remove('open');
+  document.body.style.overflow='';
+  modal.innerHTML='';
+}
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+board.addEventListener('click', e=>{
+  const card = e.target.closest('.card');
+  if(!card) return;
+  const tool = card.dataset.tool;
+  const cat = card.dataset.cat;
+  TOOLS[tool](cat);
+});
+
+tabs.addEventListener('click', e=>{
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  tabs.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const f = btn.dataset.filter;
+  board.querySelectorAll('.card').forEach(c=>{
+    c.style.display = (f==='all' || c.dataset.cat===f) ? '' : 'none';
+  });
+});
+
+function tagHtml(label, cat){
+  return `<span class="modal-tag" style="background:${CAT_SOFT[cat]};color:${CAT_COLORS[cat]};padding:4px 10px;border-radius:20px;">${label}</span>`;
+}
+
+/* ---------------- TOOL: GPA Calculator ---------------- */
+const gpaScale = {'A':4.0,'A-':3.7,'B+':3.3,'B':3.0,'B-':2.7,'C+':2.3,'C':2.0,'C-':1.7,'D+':1.3,'D':1.0,'F':0.0};
+let gpaCourses = [];
+
+function renderGpa(){
+  const rows = gpaCourses.map((c,i)=>`
+    <tr>
+      <td>${c.name}</td><td>${c.credits}</td><td>${c.grade}</td>
+      <td><span class="del" data-i="${i}">remove</span></td>
+    </tr>`).join('');
+  let totalPts=0, totalCredits=0;
+  gpaCourses.forEach(c=>{ totalPts += gpaScale[c.grade]*c.credits; totalCredits += Number(c.credits); });
+  const gpa = totalCredits ? (totalPts/totalCredits).toFixed(2) : '0.00';
+
+  modal.querySelector('#gpaBody').innerHTML = rows || `<tr><td colspan="4" class="empty-state">No courses yet — add your first below.</td></tr>`;
+  modal.querySelector('#gpaResult').innerHTML = `<div class="result-label">Current GPA</div><div class="result-big">${gpa}</div>`;
+  modal.querySelectorAll('.del').forEach(d=> d.onclick = ()=>{ gpaCourses.splice(+d.dataset.i,1); renderGpa(); });
+}
+
+function toolGpa(cat){
+  openModal(`
+    <h2>GPA Calculator</h2>
+    ${tagHtml('Math','math')}
+    <p style="color:var(--ink-soft);font-size:13.5px;margin:6px 0 16px;">Uses a standard 4.0 scale. Add each course with its credit hours and letter grade.</p>
+    <div class="row">
+      <div class="field"><label>Course</label><input type="text" id="gCourse" placeholder="e.g. Calculus II"></div>
+      <div class="field" style="max-width:90px;"><label>Credits</label><input type="number" id="gCredits" min="0" step="0.5" value="3"></div>
+      <div class="field" style="max-width:90px;"><label>Grade</label>
+        <select id="gGrade">${Object.keys(gpaScale).map(g=>`<option>${g}</option>`).join('')}</select>
+      </div>
+    </div>
+    <button class="btn" id="gAdd" style="background:var(--math)">Add course</button>
+    <table class="mini"><thead><tr><th>Course</th><th>Credits</th><th>Grade</th><th></th></tr></thead><tbody id="gpaBody"></tbody></table>
+    <div class="result-box" id="gpaResult" style="background:var(--math-soft);color:var(--math);"></div>
+  `,'math');
+  renderGpa();
+  modal.querySelector('#gAdd').onclick = ()=>{
+    const name = modal.querySelector('#gCourse').value.trim() || 'Untitled course';
+    const credits = modal.querySelector('#gCredits').value || 3;
+    const grade = modal.querySelector('#gGrade').value;
+    gpaCourses.push({name, credits, grade});
+    modal.querySelector('#gCourse').value='';
+    renderGpa();
+  };
+}
+
+/* ---------------- TOOL: Pomodoro ---------------- */
+let pomo = { seconds:25*60, running:false, mode:'focus', sessions:0, interval:null };
+
+function fmtTime(s){
+  const m = Math.floor(s/60).toString().padStart(2,'0');
+  const sec = (s%60).toString().padStart(2,'0');
+  return `${m}:${sec}`;
+}
+function toolPomodoro(cat){
+  openModal(`
+    <h2>Pomodoro Timer</h2>
+    ${tagHtml('Study','study')}
+    <p style="color:var(--ink-soft);font-size:13.5px;margin:6px 0 4px;">Focus for 25, breathe for 5. Repeat.</p>
+    <div class="timer-mode" id="pMode">FOCUS</div>
+    <div class="timer-display" id="pDisplay" style="color:var(--study);">${fmtTime(pomo.seconds)}</div>
+    <div class="timer-controls">
+      <button class="btn" id="pStart" style="background:var(--study)">${pomo.running?'Pause':'Start'}</button>
+      <button class="btn ghost" id="pReset">Reset</button>
+    </div>
+    <p style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);">Sessions completed: <b id="pCount">${pomo.sessions}</b></p>
+  `,'study');
+  updatePomoUI();
+  modal.querySelector('#pStart').onclick = togglePomo;
+  modal.querySelector('#pReset').onclick = resetPomo;
+}
+function updatePomoUI(){
+  if(!modal.querySelector('#pDisplay')) return;
+  modal.querySelector('#pDisplay').textContent = fmtTime(pomo.seconds);
+  modal.querySelector('#pMode').textContent = pomo.mode==='focus' ? 'FOCUS' : 'BREAK';
+  modal.querySelector('#pCount').textContent = pomo.sessions;
+  const btn = modal.querySelector('#pStart');
+  if(btn) btn.textContent = pomo.running ? 'Pause' : 'Start';
+}
+function togglePomo(){
+  pomo.running = !pomo.running;
+  if(pomo.running){
+    pomo.interval = setInterval(()=>{
+      pomo.seconds--;
+      if(pomo.seconds<=0){
+        if(pomo.mode==='focus'){ pomo.sessions++; pomo.mode='break'; pomo.seconds=5*60; }
+        else { pomo.mode='focus'; pomo.seconds=25*60; }
+      }
+      updatePomoUI();
+    },1000);
+  } else {
+    clearInterval(pomo.interval);
+  }
+  updatePomoUI();
+}
+function resetPomo(){
+  clearInterval(pomo.interval);
+  pomo.running=false; pomo.mode='focus'; pomo.seconds=25*60;
+  updatePomoUI();
+}
+
+/* ---------------- TOOL: Flashcards ---------------- */
+let deck = [ {f:'Mitochondria', b:'The powerhouse of the cell'}, {f:'Photosynthesis', b:'Light + CO₂ + H₂O → glucose + O₂'} ];
+let deckIndex = 0;
+
+function toolFlashcards(cat){
+  deckIndex = 0;
+  openModal(`
+    <h2>Flashcards</h2>
+    ${tagHtml('Study','study')}
+    <div class="flip-area">
+      <div class="flashcard" id="fCard">
+        <div class="face front" id="fFront"></div>
+        <div class="face back" id="fBack"></div>
+      </div>
+    </div>
+    <div class="deck-nav">
+      <button class="btn ghost" id="fPrev">← Prev</button>
+      <span id="fPos"></span>
+      <button class="btn ghost" id="fNext">Next →</button>
+    </div>
+    <hr style="border:none;border-top:1px solid #e2d5bc;margin:18px 0;">
+    <div class="row">
+      <div class="field"><label>Front</label><input type="text" id="fFrontIn" placeholder="Term or question"></div>
+      <div class="field"><label>Back</label><input type="text" id="fBackIn" placeholder="Answer"></div>
+    </div>
+    <button class="btn" id="fAdd" style="background:var(--study)">Add card</button>
+  `,'study');
+  renderDeck();
+  modal.querySelector('#fCard').onclick = ()=> modal.querySelector('#fCard').classList.toggle('flipped');
+  modal.querySelector('#fPrev').onclick = ()=>{ deckIndex = (deckIndex-1+deck.length)%deck.length; renderDeck(); };
+  modal.querySelector('#fNext').onclick = ()=>{ deckIndex = (deckIndex+1)%deck.length; renderDeck(); };
+  modal.querySelector('#fAdd').onclick = ()=>{
+    const f = modal.querySelector('#fFrontIn').value.trim();
+    const b = modal.querySelector('#fBackIn').value.trim();
+    if(!f || !b) return;
+    deck.push({f,b});
+    modal.querySelector('#fFrontIn').value=''; modal.querySelector('#fBackIn').value='';
+    deckIndex = deck.length-1;
+    renderDeck();
+  };
+}
+function renderDeck(){
+  if(!modal.querySelector('#fCard')) return;
+  modal.querySelector('#fCard').classList.remove('flipped');
+  const card = deck[deckIndex];
+  modal.querySelector('#fFront').textContent = card.f;
+  modal.querySelector('#fBack').textContent = card.b;
+  modal.querySelector('#fPos').textContent = `${deckIndex+1} / ${deck.length}`;
+}
+
+/* ---------------- TOOL: Unit Converter ---------------- */
+const convUnits = {
+  length: { m:1, km:1000, cm:0.01, mm:0.001, mi:1609.344, yd:0.9144, ft:0.3048, in:0.0254 },
+  weight: { kg:1, g:0.001, mg:0.000001, lb:0.453592, oz:0.0283495 },
+};
+function toolConverter(cat){
+  openModal(`
+    <h2>Unit Converter</h2>
+    ${tagHtml('Convert','convert')}
+    <div class="field"><label>Category</label>
+      <select id="cCat">
+        <option value="length">Length</option>
+        <option value="weight">Weight</option>
+        <option value="temp">Temperature</option>
+      </select>
+    </div>
+    <div class="row">
+      <div class="field"><label>Value</label><input type="number" id="cVal" value="1"></div>
+      <div class="field"><label>From</label><select id="cFrom"></select></div>
+      <div class="field"><label>To</label><select id="cTo"></select></div>
+    </div>
+    <div class="result-box" id="cResult" style="background:var(--convert-soft);color:var(--convert);"></div>
+  `,'convert');
+  const catSel = modal.querySelector('#cCat');
+  const fromSel = modal.querySelector('#cFrom');
+  const toSel = modal.querySelector('#cTo');
+
+  function populateUnits(){
+    const c = catSel.value;
+    let opts;
+    if(c==='temp') opts = ['C','F','K'];
+    else opts = Object.keys(convUnits[c]);
+    fromSel.innerHTML = opts.map(o=>`<option>${o}</option>`).join('');
+    toSel.innerHTML = opts.map(o=>`<option>${o}</option>`).join('');
+    toSel.selectedIndex = 1 % opts.length;
+    compute();
+  }
+  function toC(v,u){ return u==='C'?v : u==='F'?(v-32)*5/9 : v-273.15; }
+  function fromC(v,u){ return u==='C'?v : u==='F'?(v*9/5)+32 : v+273.15; }
+
+  function compute(){
+    const cat = catSel.value;
+    const val = parseFloat(modal.querySelector('#cVal').value) || 0;
+    const from = fromSel.value, to = toSel.value;
+    let out;
+    if(cat==='temp'){
+      out = fromC(toC(val, from), to);
+    } else {
+      const base = val * convUnits[cat][from];
+      out = base / convUnits[cat][to];
+    }
+    modal.querySelector('#cResult').innerHTML = `<div class="result-label">Result</div><div class="result-big">${out.toFixed(4).replace(/\.?0+$/,'')} ${to}</div>`;
+  }
+  catSel.onchange = populateUnits;
+  [fromSel,toSel].forEach(s=> s.onchange = compute);
+  modal.querySelector('#cVal').oninput = compute;
+  populateUnits();
+}
+
+/* ---------------- TOOL: Word Counter ---------------- */
+function toolWordcount(cat){
+  openModal(`
+    <h2>Word Counter</h2>
+    ${tagHtml('Writing','writing')}
+    <div class="field"><label>Paste your text</label><textarea id="wText" rows="8" placeholder="Paste an essay, paragraph or draft here..."></textarea></div>
+    <div class="result-box" style="background:var(--writing-soft);color:var(--writing);display:flex;gap:26px;flex-wrap:wrap;">
+      <div><div class="result-label">Words</div><div class="result-big" id="wWords">0</div></div>
+      <div><div class="result-label">Characters</div><div class="result-big" id="wChars">0</div></div>
+      <div><div class="result-label">Read time</div><div class="result-big" id="wTime">0m</div></div>
+    </div>
+  `,'writing');
+  modal.querySelector('#wText').oninput = (e)=>{
+    const text = e.target.value;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    const mins = Math.max(1, Math.round(words/200));
+    modal.querySelector('#wWords').textContent = words;
+    modal.querySelector('#wChars').textContent = chars;
+    modal.querySelector('#wTime').textContent = words ? mins+'m' : '0m';
+  };
+}
+
+/* ---------------- TOOL: Budget Tracker ---------------- */
+let budgetItems = [];
+function renderBudget(){
+  const rows = budgetItems.map((b,i)=>`
+    <tr><td>${b.name}</td><td style="color:${b.type==='income'?'var(--finance)':'var(--convert)'}">${b.type==='income'?'+':'-'}$${Number(b.amount).toFixed(2)}</td>
+    <td><span class="del" data-i="${i}">remove</span></td></tr>`).join('');
+  const total = budgetItems.reduce((s,b)=> s + (b.type==='income'? +b.amount : -b.amount), 0);
+  modal.querySelector('#bBody').innerHTML = rows || `<tr><td colspan="3" class="empty-state">No entries yet.</td></tr>`;
+  modal.querySelector('#bResult').innerHTML = `<div class="result-label">Balance</div><div class="result-big">$${total.toFixed(2)}</div>`;
+  modal.querySelectorAll('.del').forEach(d=> d.onclick=()=>{ budgetItems.splice(+d.dataset.i,1); renderBudget(); });
+}
+function toolBudget(cat){
+  openModal(`
+    <h2>Budget Tracker</h2>
+    ${tagHtml('Finance','finance')}
+    <div class="row">
+      <div class="field"><label>Description</label><input type="text" id="bName" placeholder="e.g. Part-time job"></div>
+      <div class="field" style="max-width:110px;"><label>Amount</label><input type="number" id="bAmt" value="0" step="0.01"></div>
+      <div class="field" style="max-width:110px;"><label>Type</label><select id="bType"><option value="income">Income</option><option value="expense">Expense</option></select></div>
+    </div>
+    <button class="btn" id="bAdd" style="background:var(--finance)">Add entry</button>
+    <table class="mini"><thead><tr><th>Description</th><th>Amount</th><th></th></tr></thead><tbody id="bBody"></tbody></table>
+    <div class="result-box" id="bResult" style="background:var(--finance-soft);color:var(--finance);"></div>
+  `,'finance');
+  renderBudget();
+  modal.querySelector('#bAdd').onclick = ()=>{
+    const name = modal.querySelector('#bName').value.trim() || 'Untitled';
+    const amount = modal.querySelector('#bAmt').value || 0;
+    const type = modal.querySelector('#bType').value;
+    budgetItems.push({name, amount, type});
+    modal.querySelector('#bName').value='';
+    modal.querySelector('#bAmt').value='0';
+    renderBudget();
+  };
+}
+
+/* ---------------- TOOL: Task Manager ---------------- */
+let tasks = [];
+function renderTasks(){
+  const sorted = [...tasks].sort((a,b)=> (a.due||'9999').localeCompare(b.due||'9999'));
+  const rows = sorted.map((t)=>{
+    const i = tasks.indexOf(t);
+    return `<tr style="${t.done?'opacity:.45;text-decoration:line-through;':''}">
+      <td><span class="del" data-toggle="${i}" style="color:var(--misc);cursor:pointer;">${t.done?'↺':'✓'}</span></td>
+      <td>${t.name}</td><td>${t.due || '—'}</td>
+      <td><span class="del" data-del="${i}">remove</span></td></tr>`;
+  }).join('');
+  modal.querySelector('#tBody').innerHTML = rows || `<tr><td colspan="4" class="empty-state">No tasks yet — add your first below.</td></tr>`;
+  modal.querySelectorAll('[data-del]').forEach(d=> d.onclick=()=>{ tasks.splice(+d.dataset.del,1); renderTasks(); });
+  modal.querySelectorAll('[data-toggle]').forEach(d=> d.onclick=()=>{ tasks[+d.dataset.toggle].done = !tasks[+d.dataset.toggle].done; renderTasks(); });
+}
+function toolTasks(cat){
+  openModal(`
+    <h2>Task Manager</h2>
+    ${tagHtml('Misc','misc')}
+    <div class="row">
+      <div class="field"><label>Task</label><input type="text" id="tName" placeholder="e.g. Finish lab report"></div>
+      <div class="field" style="max-width:150px;"><label>Due date</label><input type="date" id="tDue"></div>
+    </div>
+    <button class="btn" id="tAdd" style="background:var(--misc)">Add task</button>
+    <table class="mini"><thead><tr><th></th><th>Task</th><th>Due</th><th></th></tr></thead><tbody id="tBody"></tbody></table>
+  `,'misc');
+  renderTasks();
+  modal.querySelector('#tAdd').onclick = ()=>{
+    const name = modal.querySelector('#tName').value.trim();
+    const due = modal.querySelector('#tDue').value;
+    if(!name) return;
+    tasks.push({name, due, done:false});
+    modal.querySelector('#tName').value=''; modal.querySelector('#tDue').value='';
+    renderTasks();
+  };
+}
+
+/* ---------------- TOOL: Exam Countdown ---------------- */
+let exams = [];
+function renderCountdown(){
+  const now = new Date();
+  const rows = exams.map((ex,i)=>{
+    const d = new Date(ex.date+'T23:59:59');
+    const diffDays = Math.ceil((d-now)/86400000);
+    const label = diffDays < 0 ? 'passed' : diffDays===0 ? 'today' : `${diffDays} day${diffDays===1?'':'s'}`;
+    return `<tr><td>${ex.name}</td><td>${ex.date}</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--study);">${label}</td>
+      <td><span class="del" data-i="${i}">remove</span></td></tr>`;
+  }).join('');
+  modal.querySelector('#eBody').innerHTML = rows || `<tr><td colspan="4" class="empty-state">No dates yet — add an exam or deadline below.</td></tr>`;
+  modal.querySelectorAll('.del').forEach(d=> d.onclick=()=>{ exams.splice(+d.dataset.i,1); renderCountdown(); });
+}
+function toolCountdown(cat){
+  openModal(`
+    <h2>Exam Countdown</h2>
+    ${tagHtml('Study','study')}
+    <div class="row">
+      <div class="field"><label>Name</label><input type="text" id="eName" placeholder="e.g. Organic Chem Final"></div>
+      <div class="field" style="max-width:170px;"><label>Date</label><input type="date" id="eDate"></div>
+    </div>
+    <button class="btn" id="eAdd" style="background:var(--study)">Add date</button>
+    <table class="mini"><thead><tr><th>Name</th><th>Date</th><th>Left</th><th></th></tr></thead><tbody id="eBody"></tbody></table>
+  `,'study');
+  renderCountdown();
+  const iv = setInterval(()=>{ if(document.body.contains(modal.querySelector('#eBody'))) renderCountdown(); else clearInterval(iv); }, 60000);
+  modal.querySelector('#eAdd').onclick = ()=>{
+    const name = modal.querySelector('#eName').value.trim();
+    const date = modal.querySelector('#eDate').value;
+    if(!name || !date) return;
+    exams.push({name, date});
+    modal.querySelector('#eName').value=''; modal.querySelector('#eDate').value='';
+    renderCountdown();
+  };
+}
+
+const TOOLS = {
+  gpa: toolGpa,
+  pomodoro: toolPomodoro,
+  flashcards: toolFlashcards,
+  converter: toolConverter,
+  wordcount: toolWordcount,
+  budget: toolBudget,
+  tasks: toolTasks,
+  countdown: toolCountdown
+};
+</script>
+</body>
+</html>
